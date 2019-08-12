@@ -1,0 +1,379 @@
+package com.softfinite;
+
+import android.content.Context;
+import android.content.DialogInterface;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.text.format.DateFormat;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.view.MenuItemCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.common.view.SimpleListDividerDecorator;
+import com.softfinite.RoomDb.TruckViewModel;
+import com.softfinite.adapter.TruckListAdapter;
+import com.softfinite.RoomDb.Truck;
+import com.softfinite.utils.CameraSelectorDialogFragment;
+import com.softfinite.utils.ExitStrategy;
+import com.softfinite.utils.FormatSelectorDialogFragment;
+import com.softfinite.utils.MessageDialogFragment;
+import com.softfinite.utils.Utils;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import me.dm7.barcodescanner.zbar.BarcodeFormat;
+import me.dm7.barcodescanner.zbar.Result;
+import me.dm7.barcodescanner.zbar.ZBarScannerView;
+
+public class HomeActivity extends BaseActivity implements
+        ZBarScannerView.ResultHandler, FormatSelectorDialogFragment.FormatSelectorDialogListener,
+        CameraSelectorDialogFragment.CameraSelectorDialogListener {
+
+    @BindView(R.id.editTruckNumber)
+    EditText editTruckNumber;
+    @BindView(R.id.rvTruckData)
+    RecyclerView rvTruckData;
+    @BindView(R.id.btnApply)
+    Button btnApply;
+    @BindView(R.id.btnSave)
+    Button btnSave;
+
+    private static final String FLASH_STATE = "FLASH_STATE";
+    private static final String AUTO_FOCUS_STATE = "AUTO_FOCUS_STATE";
+    private static final String SELECTED_FORMATS = "SELECTED_FORMATS";
+    private static final String CAMERA_ID = "CAMERA_ID";
+    private ZBarScannerView mScannerView;
+    private boolean mFlash;
+    private boolean mAutoFocus;
+    private ArrayList<Integer> mSelectedIndices;
+    private int mCameraId = -1;
+
+    private TruckViewModel truckViewModel;
+
+    TruckListAdapter truckListAdapter;
+
+    @Override
+    public void onCreate(Bundle state) {
+        super.onCreate(state);
+        if (state != null) {
+            mFlash = state.getBoolean(FLASH_STATE, false);
+            mAutoFocus = state.getBoolean(AUTO_FOCUS_STATE, true);
+            mSelectedIndices = state.getIntegerArrayList(SELECTED_FORMATS);
+            mCameraId = state.getInt(CAMERA_ID, -1);
+        } else {
+            mFlash = false;
+            mAutoFocus = true;
+            mSelectedIndices = null;
+            mCameraId = -1;
+        }
+
+        setContentView(R.layout.activity_home);
+        ButterKnife.bind(this);
+
+        initDrawer();
+        init();
+    }
+
+    private void init() {
+        setTitleText("Home");
+
+        truckViewModel = ViewModelProviders.of(this).get(TruckViewModel.class);
+
+
+        ViewGroup contentFrame = (ViewGroup) findViewById(R.id.content_frame);
+        mScannerView = new ZBarScannerView(this);
+        setupFormats();
+        contentFrame.addView(mScannerView);
+
+        rvTruckData.setLayoutManager(new LinearLayoutManager(getActivity()));
+        rvTruckData.setLayoutAnimation(Utils.getRowFadeSpeedAnimation(getActivity()));
+        rvTruckData.addItemDecoration(new SimpleListDividerDecorator(getResources().getDrawable(R.drawable.list_divider), true));
+
+        truckListAdapter = new TruckListAdapter(getActivity());
+        rvTruckData.setAdapter(truckListAdapter);
+
+        truckViewModel.getAllWordsLive().observe(getActivity(), new Observer<List<Truck>>() {
+            @Override
+            public void onChanged(@Nullable final List<Truck> words) {
+                // Update the cached copy of the words in the adapter.
+                truckListAdapter.addAll(words);
+            }
+        });
+
+        btnApply.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                StringBuilder data = new StringBuilder();
+                for (int i = 0; i < truckListAdapter.getAllDAta().size(); i++) {
+                    data.append(truckListAdapter.getAllDAta().get(i).getBarcodenumber() + "\n");
+                }
+                Date d = new Date();
+                CharSequence todayDate = DateFormat.format("dd-MM-yyyy ", d.getTime());
+                generateNoteOnSD(getActivity(), todayDate + editTruckNumber.getText().toString().trim(), data.toString());
+            }
+        });
+    }
+
+    public void generateNoteOnSD(Context context, String sFileName, String sBody) {
+        try {
+            File root = new File(Environment.getExternalStorageDirectory(), "Notes");
+            if (!root.exists()) {
+                root.mkdirs();
+            } else {
+                root.delete();
+            }
+            File gpxfile = new File(root, sFileName);
+            FileWriter writer = new FileWriter(gpxfile);
+            writer.append(sBody);
+            writer.flush();
+            writer.close();
+            Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mScannerView.setResultHandler(this);
+        mScannerView.startCamera(mCameraId);
+        mScannerView.setFlash(mFlash);
+        mScannerView.setAutoFocus(mAutoFocus);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuItem menuItem;
+
+        if (mFlash) {
+            menuItem = menu.add(Menu.NONE, R.id.menu_flash, 0, R.string.flash_on);
+        } else {
+            menuItem = menu.add(Menu.NONE, R.id.menu_flash, 0, R.string.flash_off);
+        }
+        MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_NEVER);
+
+
+        if (mAutoFocus) {
+            menuItem = menu.add(Menu.NONE, R.id.menu_auto_focus, 0, R.string.auto_focus_on);
+        } else {
+            menuItem = menu.add(Menu.NONE, R.id.menu_auto_focus, 0, R.string.auto_focus_off);
+        }
+        MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_NEVER);
+
+        menuItem = menu.add(Menu.NONE, R.id.menu_formats, 0, R.string.formats);
+        MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_NEVER);
+
+        menuItem = menu.add(Menu.NONE, R.id.menu_camera_selector, 0, R.string.select_camera);
+        MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_NEVER);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(FLASH_STATE, mFlash);
+        outState.putBoolean(AUTO_FOCUS_STATE, mAutoFocus);
+        outState.putIntegerArrayList(SELECTED_FORMATS, mSelectedIndices);
+        outState.putInt(CAMERA_ID, mCameraId);
+    }
+
+    public void setupFormats() {
+        List<BarcodeFormat> formats = new ArrayList<BarcodeFormat>();
+        if (mSelectedIndices == null || mSelectedIndices.isEmpty()) {
+            mSelectedIndices = new ArrayList<Integer>();
+            for (int i = 0; i < BarcodeFormat.ALL_FORMATS.size(); i++) {
+                mSelectedIndices.add(i);
+            }
+        }
+
+        for (int index : mSelectedIndices) {
+            formats.add(BarcodeFormat.ALL_FORMATS.get(index));
+        }
+        if (mScannerView != null) {
+            mScannerView.setFormats(formats);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.menu_flash:
+                mFlash = !mFlash;
+                if (mFlash) {
+                    item.setTitle(R.string.flash_on);
+                } else {
+                    item.setTitle(R.string.flash_off);
+                }
+                mScannerView.setFlash(mFlash);
+                return true;
+            case R.id.menu_auto_focus:
+                mAutoFocus = !mAutoFocus;
+                if (mAutoFocus) {
+                    item.setTitle(R.string.auto_focus_on);
+                } else {
+                    item.setTitle(R.string.auto_focus_off);
+                }
+                mScannerView.setAutoFocus(mAutoFocus);
+                return true;
+            case R.id.menu_formats:
+                DialogFragment fragment = FormatSelectorDialogFragment.newInstance(this, mSelectedIndices);
+                fragment.show(getSupportFragmentManager(), "format_selector");
+                return true;
+            case R.id.menu_camera_selector:
+                mScannerView.stopCamera();
+                DialogFragment cFragment = CameraSelectorDialogFragment.newInstance(this, mCameraId);
+                cFragment.show(getSupportFragmentManager(), "camera_selector");
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void handleResult(Result rawResult) {
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+            r.play();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+        Date d = new Date();
+        CharSequence todayDate = DateFormat.format("dd-MM-yyyy ", d.getTime());
+
+        builder.setMessage("Contents = " + rawResult.getContents() + ", Format = " + rawResult.getBarcodeFormat().getName()).setTitle("Scan Result").setCancelable(false).setPositiveButton("Add", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (validate()) {
+                    Truck truck = new Truck(editTruckNumber.getText().toString().trim(), todayDate.toString(), rawResult.getContents());
+                    truckViewModel.insert(truck);
+                    dialog.dismiss();
+                }
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        }).setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                resumeCamView();
+            }
+        }).show();
+//        showMessageDialog("Contents = " + rawResult.getContents() + ", Format = " + rawResult.getBarcodeFormat().getName(), rawResult.getContents());
+    }
+
+//    public void showMessageDialog(String message, String contains) {
+//        DialogFragment fragment = MessageDialogFragment.newInstance("Scan Results", message, this, contains);
+//        fragment.show(getSupportFragmentManager(), "scan_results");
+//    }
+
+    public void resumeCamView() {
+        mScannerView.resumeCameraPreview(this);
+    }
+
+    public void closeMessageDialog() {
+        closeDialog("scan_results");
+    }
+
+    public void closeFormatsDialog() {
+        closeDialog("format_selector");
+    }
+
+    public void closeDialog(String dialogName) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        DialogFragment fragment = (DialogFragment) fragmentManager.findFragmentByTag(dialogName);
+        if (fragment != null) {
+            fragment.dismiss();
+        }
+    }
+
+    @Override
+    public void onFormatsSaved(ArrayList<Integer> selectedIndices) {
+        mSelectedIndices = selectedIndices;
+        setupFormats();
+    }
+
+    @Override
+    public void onCameraSelected(int cameraId) {
+        mCameraId = cameraId;
+        mScannerView.startCamera(mCameraId);
+        mScannerView.setFlash(mFlash);
+        mScannerView.setAutoFocus(mAutoFocus);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mScannerView.stopCamera();
+        closeMessageDialog();
+        closeFormatsDialog();
+    }
+
+    @Override
+    public void onBackPressed() {
+        try {
+            if (result.isDrawerOpen()) {
+                result.closeDrawer();
+            } else {
+                if (ExitStrategy.canExit()) {
+                    super.onBackPressed();
+                } else {
+                    ExitStrategy.startExitDelay(2000);
+                    Toast.makeText(getActivity(), getString(R.string.exit_msg),
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean validate() {
+        if (editTruckNumber.getText().toString().trim().length() <= 0) {
+            showToast("Enter Truck Number", Toast.LENGTH_SHORT);
+            return false;
+        }
+        return true;
+    }
+}

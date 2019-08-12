@@ -43,7 +43,17 @@
             android:contentDescription="@null"
             android:padding="10dp"
             android:src="@drawable/ic_menu"
-            android:visibility="visible" />
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/imgBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|left"
+            android:contentDescription="@null"
+            android:padding="10dp"
+            android:src="@drawable/ic_arrow_back_24dp"
+            android:visibility="gone" />
 
     </FrameLayout>
     <!--<ImageView-->

@@ -15,19 +15,20 @@
         android:paddingTop="24dp">
 
         <!--<de.hdodenhof.circleimageview.CircleImageView-->
-            <!--android:id="@+id/imgUserPhoto"-->
-            <!--android:layout_width="80dp"-->
-            <!--android:layout_height="80dp"-->
-            <!--android:src="@mipmap/ic_avatar"-->
-            <!--app:civ_border_color="@android:color/white"-->
-            <!--app:civ_border_width="0dp" />-->
+        <!--android:id="@+id/imgUserPhoto"-->
+        <!--android:layout_width="80dp"-->
+        <!--android:layout_height="80dp"-->
+        <!--android:src="@mipmap/ic_avatar"-->
+        <!--app:civ_border_color="@android:color/white"-->
+        <!--app:civ_border_width="0dp" />-->
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="15dp"
             android:layout_marginTop="10dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="invisible">
 
             <com.common.view.CTextView
                 android:id="@+id/tvMenuFullName"
@@ -57,24 +58,5 @@
 
 
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:gravity="bottom"
-        android:orientation="horizontal">
-
-        <com.common.view.CTextView
-            android:id="@+id/tvMenuExpiry"
-            style="@style/txt_fff_14"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawablePadding="5dp"
-            android:gravity="center"
-            android:text="Member since 6 Years" />
-
-    </LinearLayout>
-
 
 </LinearLayout>

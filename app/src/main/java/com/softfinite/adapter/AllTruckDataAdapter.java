@@ -23,14 +23,14 @@ import butterknife.ButterKnife;
  * Created by om on 7/7/2017.
  */
 
-public class TruckListAdapter extends RecyclerView.Adapter<TruckListAdapter.MyViewHolder> {
+public class AllTruckDataAdapter extends RecyclerView.Adapter<AllTruckDataAdapter.MyViewHolder> {
 
     //    ImageLoader imageLoader;
     public List<Truck> truckData = new ArrayList<>();
     Eventlistener mEventlistener;
     Context context;
 
-    public TruckListAdapter(Context c) {
+    public AllTruckDataAdapter(Context c) {
         this.context = c;
 //        imageLoader = Utils.initImageLoader(context);
     }

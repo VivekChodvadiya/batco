@@ -36,15 +36,25 @@ public class TruckViewModel extends AndroidViewModel {
     //   the UI when the data actually changes.
     // - Repository is completely separated from the UI through the ViewModel.
     private LiveData<List<Truck>> mAllWordsLive;
+    private LiveData<List<Truck>> mgetFromTruckAndDate;
+
+    String truckNumber, date;
 
     public TruckViewModel(Application application) {
         super(application);
-        mRepository = new TruckRepository(application);
+        mRepository = new TruckRepository(application, truckNumber, date);
         mAllWordsLive = mRepository.getAllTruckDataLive();
+        mgetFromTruckAndDate = mRepository.getFromTruckAndDate();
     }
 
     public LiveData<List<Truck>> getAllWordsLive() {
         return mAllWordsLive;
+    }
+
+    public LiveData<List<Truck>> getFromTruckAndDate(String truckNumber, String date) {
+        mRepository = new TruckRepository(getApplication(), truckNumber, date);
+        mgetFromTruckAndDate = mRepository.getFromTruckAndDate();
+        return mgetFromTruckAndDate;
     }
 
     public void insert(Truck truck) {

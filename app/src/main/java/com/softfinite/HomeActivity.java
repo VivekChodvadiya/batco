@@ -2,18 +2,25 @@ package com.softfinite;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -27,6 +34,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.common.view.SimpleListDividerDecorator;
+import com.softfinite.RoomDb.TruckDao;
+import com.softfinite.RoomDb.TruckRoomDatabase;
 import com.softfinite.RoomDb.TruckViewModel;
 import com.softfinite.adapter.TruckListAdapter;
 import com.softfinite.RoomDb.Truck;
@@ -36,11 +45,15 @@ import com.softfinite.utils.FormatSelectorDialogFragment;
 import com.softfinite.utils.MessageDialogFragment;
 import com.softfinite.utils.Utils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -59,10 +72,12 @@ public class HomeActivity extends BaseActivity implements
     EditText editTruckNumber;
     @BindView(R.id.rvTruckData)
     RecyclerView rvTruckData;
-    @BindView(R.id.btnApply)
-    Button btnApply;
     @BindView(R.id.btnSave)
     Button btnSave;
+    @BindView(R.id.btnApply)
+    Button btnApply;
+    @BindView(R.id.llPlaceHolder)
+    LinearLayout llPlaceHolder;
 
     private static final String FLASH_STATE = "FLASH_STATE";
     private static final String AUTO_FOCUS_STATE = "AUTO_FOCUS_STATE";
@@ -77,6 +92,7 @@ public class HomeActivity extends BaseActivity implements
     private TruckViewModel truckViewModel;
 
     TruckListAdapter truckListAdapter;
+    CharSequence todayDate;
 
     @Override
     public void onCreate(Bundle state) {
@@ -104,6 +120,8 @@ public class HomeActivity extends BaseActivity implements
         setTitleText("Home");
 
         truckViewModel = ViewModelProviders.of(this).get(TruckViewModel.class);
+        Date d = new Date();
+        todayDate = DateFormat.format("dd-MM-yyyy", d.getTime());
 
 
         ViewGroup contentFrame = (ViewGroup) findViewById(R.id.content_frame);
@@ -118,18 +136,50 @@ public class HomeActivity extends BaseActivity implements
         truckListAdapter = new TruckListAdapter(getActivity());
         rvTruckData.setAdapter(truckListAdapter);
 
-        truckViewModel.getAllWordsLive().observe(getActivity(), new Observer<List<Truck>>() {
+        truckViewModel.getFromTruckAndDate(editTruckNumber.getText().toString().trim(), todayDate.toString()).observe(getActivity(), new Observer<List<Truck>>() {
             @Override
             public void onChanged(@Nullable final List<Truck> words) {
                 // Update the cached copy of the words in the adapter.
                 truckListAdapter.addAll(words);
+                refreshPlaceHolder();
             }
         });
 
         btnApply.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                truckViewModel.getFromTruckAndDate(editTruckNumber.getText().toString().trim(), todayDate.toString()).observe(getActivity(), new Observer<List<Truck>>() {
+                    @Override
+                    public void onChanged(@Nullable final List<Truck> words) {
+                        // Update the cached copy of the words in the adapter.
+                        truckListAdapter.addAll(words);
+                        refreshPlaceHolder();
+                    }
+                });
+            }
+        });
 
+        editTruckNumber.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                truckViewModel.getFromTruckAndDate(editTruckNumber.getText().toString().trim(), todayDate.toString()).observe(getActivity(), new Observer<List<Truck>>() {
+                    @Override
+                    public void onChanged(@Nullable final List<Truck> words) {
+                        // Update the cached copy of the words in the adapter.
+                        truckListAdapter.addAll(words);
+                        refreshPlaceHolder();
+                    }
+                });
             }
         });
 
@@ -138,32 +188,25 @@ public class HomeActivity extends BaseActivity implements
             public void onClick(View v) {
                 StringBuilder data = new StringBuilder();
                 for (int i = 0; i < truckListAdapter.getAllDAta().size(); i++) {
-                    data.append(truckListAdapter.getAllDAta().get(i).getBarcodenumber() + "\n");
+                    data.append(truckListAdapter.getAllDAta().get(i).getBarcodenumber());
+                    data.append("\n");
                 }
-                Date d = new Date();
-                CharSequence todayDate = DateFormat.format("dd-MM-yyyy ", d.getTime());
                 generateNoteOnSD(getActivity(), todayDate + editTruckNumber.getText().toString().trim(), data.toString());
             }
         });
-    }
 
-    public void generateNoteOnSD(Context context, String sFileName, String sBody) {
-        try {
-            File root = new File(Environment.getExternalStorageDirectory(), "Notes");
-            if (!root.exists()) {
-                root.mkdirs();
-            } else {
-                root.delete();
+        truckListAdapter.setEventlistener(new TruckListAdapter.Eventlistener() {
+            @Override
+            public void onItemviewClick(int position) {
+
             }
-            File gpxfile = new File(root, sFileName);
-            FileWriter writer = new FileWriter(gpxfile);
-            writer.append(sBody);
-            writer.flush();
-            writer.close();
-            Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+            @Override
+            public void onItemviewDeleteClick(int position) {
+                Truck data = truckListAdapter.getItem(position);
+                deleteRecord(data.getDate(), data.getTrucknumber(), data.getBarcodenumber(), position);
+            }
+        });
     }
 
     @Override
@@ -277,9 +320,6 @@ public class HomeActivity extends BaseActivity implements
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        Date d = new Date();
-        CharSequence todayDate = DateFormat.format("dd-MM-yyyy ", d.getTime());
-
         builder.setMessage("Contents = " + rawResult.getContents() + ", Format = " + rawResult.getBarcodeFormat().getName()).setTitle("Scan Result").setCancelable(false).setPositiveButton("Add", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -298,6 +338,14 @@ public class HomeActivity extends BaseActivity implements
             @Override
             public void onDismiss(DialogInterface dialog) {
                 resumeCamView();
+                truckViewModel.getFromTruckAndDate(editTruckNumber.getText().toString().trim(), todayDate.toString()).observe(getActivity(), new Observer<List<Truck>>() {
+                    @Override
+                    public void onChanged(@Nullable final List<Truck> words) {
+                        // Update the cached copy of the words in the adapter.
+                        truckListAdapter.addAll(words);
+                        refreshPlaceHolder();
+                    }
+                });
             }
         }).show();
 //        showMessageDialog("Contents = " + rawResult.getContents() + ", Format = " + rawResult.getBarcodeFormat().getName(), rawResult.getContents());
@@ -350,6 +398,25 @@ public class HomeActivity extends BaseActivity implements
         closeFormatsDialog();
     }
 
+    public void generateNoteOnSD(Context context, String sFileName, String sBody) {
+        try {
+            File root = new File(Environment.getExternalStorageDirectory(), "batco");
+            if (!root.exists()) {
+                root.mkdirs();
+            } else {
+//                root.delete();
+            }
+            File gpxfile = new File(root, sFileName + ".txt");
+            FileWriter writer = new FileWriter(gpxfile);
+            writer.append(sBody);
+            writer.flush();
+            writer.close();
+            Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void onBackPressed() {
         try {
@@ -375,5 +442,61 @@ public class HomeActivity extends BaseActivity implements
             return false;
         }
         return true;
+    }
+
+    private void refreshPlaceHolder() {
+        if (rvTruckData.getAdapter().getItemCount() == 0) {
+            llPlaceHolder.setVisibility(View.VISIBLE);
+            rvTruckData.setVisibility(View.GONE);
+        } else {
+            llPlaceHolder.setVisibility(View.GONE);
+            rvTruckData.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private static class PopulateDbAsync extends AsyncTask<Void, Void, Void> {
+        private final TruckDao mDao;
+        String date;
+        String truckNumber;
+        String barcode;
+
+        PopulateDbAsync(TruckRoomDatabase db, String date, String truckNumber, String barcode) {
+            mDao = db.truckDao();
+            this.date = date;
+            this.truckNumber = truckNumber;
+            this.barcode = barcode;
+        }
+
+        @Override
+        protected Void doInBackground(final Void... params) {
+            // Start the app with a clean database every time.
+            // Not needed if you only populate on creation.
+            mDao.deleteFromDateAnd(date, truckNumber, barcode);
+
+//            Truck truck = new Truck("Hello");
+//            mDao.insert(truck);
+//            truck = new Truck("World");
+//            mDao.insert(truck);
+            return null;
+        }
+    }
+
+    private void deleteRecord(String date, String truckNumber, String barcode, int position) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+        builder.setMessage("Are you sure you want to delete this record? \n\nDate : " + date + "\nTruck Number : " + truckNumber + "\nBarcode : " + barcode).setTitle("Alert").setCancelable(false).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                TruckRoomDatabase db = TruckRoomDatabase.getDatabase(getApplication());
+                new PopulateDbAsync(db, date, truckNumber, barcode).execute();
+                truckListAdapter.remove(position);
+                dialog.dismiss();
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        }).show();
     }
 }

@@ -16,6 +16,7 @@ package com.softfinite.RoomDb;
  * limitations under the License.
  */
 
+import android.app.Activity;
 import android.app.Application;
 import android.os.AsyncTask;
 
@@ -32,21 +33,28 @@ class TruckRepository {
 
     private TruckDao mTruckDao;
     private LiveData<List<Truck>> mAllTruckLive;
+    private LiveData<List<Truck>> mgetFromTruckAndDate;
 
     // Note that in order to unit test the WordRepository, you have to remove the Application
     // dependency. This adds complexity and much more code, and this sample is not about testing.
     // See the BasicSample in the android-architecture-components repository at
     // https://github.com/googlesamples
-    TruckRepository(Application application) {
+    TruckRepository(Application application, String truckNumber, String date) {
         TruckRoomDatabase db = TruckRoomDatabase.getDatabase(application);
         mTruckDao = db.truckDao();
         mAllTruckLive = mTruckDao.getTruckDataLive();
+        mgetFromTruckAndDate = mTruckDao.getFromTruckAndDate(truckNumber,date);
     }
+
 
     // Room executes all queries on a separate thread.
     // Observed LiveData will notify the observer when the data has changed.
     LiveData<List<Truck>> getAllTruckDataLive() {
         return mAllTruckLive;
+    }
+
+    LiveData<List<Truck>> getFromTruckAndDate() {
+        return mgetFromTruckAndDate;
     }
 
     // You must call this on a non-UI thread or your app will crash.

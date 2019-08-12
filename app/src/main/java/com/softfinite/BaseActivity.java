@@ -48,6 +48,19 @@ public class BaseActivity extends AppCompatActivity {
 
     }
 
+    public void initBack() {
+        ImageView imgBack = (ImageView) findViewById(R.id.imgBack);
+        imgBack.setVisibility(View.VISIBLE);
+        if (imgBack != null) {
+            imgBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    finish();
+                }
+            });
+        }
+    }
+
     Drawer result;
 
     public void initDrawer() {
@@ -63,8 +76,8 @@ public class BaseActivity extends AppCompatActivity {
                 .withHeader(R.layout.nav_header_main)
                 .addDrawerItems(
                         new PrimaryDrawerItem().withName("Home").withSelectable(false),
-                        new PrimaryDrawerItem().withName("Dummy Activity").withSelectable(false),
-                        new PrimaryDrawerItem().withName("Logout").withSelectable(false)
+                        new PrimaryDrawerItem().withName("Files").withSelectable(false),
+                        new PrimaryDrawerItem().withName("Clear Data").withSelectable(false)
 
                 )
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
@@ -83,11 +96,23 @@ public class BaseActivity extends AppCompatActivity {
                                 finishActivity();
                             }
                         } else if (position == 2) {
-                            if (getActivity() instanceof DummyActivity) {
+                            if (getActivity() instanceof FileRecordsActivity) {
                                 hideMenu(true);
                             } else {
                                 Intent intent = new Intent(getActivity(),
-                                        DummyActivity.class);
+                                        FileRecordsActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                        | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                hideMenu(false);
+                                finishActivity();
+                            }
+                        } else if (position == 3) {
+                            if (getActivity() instanceof ClearDataActivity) {
+                                hideMenu(true);
+                            } else {
+                                Intent intent = new Intent(getActivity(),
+                                        ClearDataActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                                         | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                                 startActivity(intent);
@@ -164,6 +189,7 @@ public class BaseActivity extends AppCompatActivity {
                 .build();
 
         ImageView imgMenu = (ImageView) findViewById(R.id.imgMenu);
+        imgMenu.setVisibility(View.VISIBLE);
         if (imgMenu != null) {
             imgMenu.setOnClickListener(new View.OnClickListener() {
                 @Override

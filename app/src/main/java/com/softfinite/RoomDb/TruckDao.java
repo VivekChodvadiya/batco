@@ -48,4 +48,11 @@ public interface TruckDao {
 
     @Query("DELETE FROM truck_table")
     void deleteAll();
+
+    @Query("SELECT * FROM truck_table WHERE trucknumber LIKE :truckNumber " +
+            "AND date LIKE :date")
+    LiveData<List<Truck>> getFromTruckAndDate(String truckNumber, String date);
+
+    @Query("DELETE FROM truck_table WHERE barcodenumber LIKE :barcodeNumber " + "AND date LIKE :date " + " AND trucknumber LIKE :truckNumber ")
+    void deleteFromDateAnd(String date, String truckNumber, String barcodeNumber);
 }

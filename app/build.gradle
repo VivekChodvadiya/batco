@@ -11,6 +11,11 @@ android {
         versionCode 1
         versionName "1.0"
 //        multiDexEnabled true
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
     }
     buildTypes {
         release {
@@ -28,7 +33,7 @@ android {
 
         android.applicationVariants.all { variant ->
             variant.outputs.all {
-                outputFileName = "clickkart-${variant.name}-${variant.versionName}.apk"
+                outputFileName = "batco-${variant.name}-${variant.versionName}.apk"
             }
         }
     }

@@ -18,6 +18,7 @@ package com.softfinite.RoomDb;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
+import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -32,8 +33,13 @@ import androidx.room.PrimaryKey;
  * https://developer.android.com/topic/libraries/architecture/room.html
  */
 
-@Entity(tableName = "truck_table")
+@Entity(tableName = "truck_table", primaryKeys = {"trucknumber", "barcodenumber"})
 public class Truck {
+
+
+    @NonNull
+    @ColumnInfo(name = "barcodenumber")
+    private String mBarcodenumber;
 
     @NonNull
     @ColumnInfo(name = "trucknumber")
@@ -43,10 +49,6 @@ public class Truck {
     @ColumnInfo(name = "date")
     private String mDate;
 
-    @NonNull
-    @PrimaryKey
-    @ColumnInfo(name = "barcodenumber")
-    private String mBarcodenumber;
 
     public Truck(@NonNull String trucknumber, @NonNull String date, @NonNull String barcodenumber) {
         this.mTrucknumber = trucknumber;

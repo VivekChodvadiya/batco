@@ -5,8 +5,8 @@ import android.os.Environment;
 import java.io.File;
 
 public class Constant {
-    public static final String FOLDER_NAME = ".diamfair";
-    public static final String CACHE_DIR = ".diamfair/Cache";
+    public static final String FOLDER_NAME = ".batcoroadlines";
+    public static final String CACHE_DIR = ".batcoroadlines/Cache";
 
     public static final String TMP_DIR = Environment
             .getExternalStorageDirectory().getAbsolutePath()
@@ -19,7 +19,7 @@ public class Constant {
     public static final String FOLDER_RIDEINN_PATH = Environment
             .getExternalStorageDirectory().getAbsolutePath()
             + File.separator
-            + "DiamFair";
+            + "Batco Roadlines";
 
 
     public static final String API_KEY = "123";

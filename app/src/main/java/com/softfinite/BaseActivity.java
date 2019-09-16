@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -25,6 +26,7 @@ import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.softfinite.utils.Utils;
 //import com.nostra13.universalimageloader.core.ImageLoader;
 
 
@@ -74,11 +76,12 @@ public class BaseActivity extends AppCompatActivity {
                 .withActivity(this).withCloseOnClick(true).withSelectedItemByPosition(-1)
                 .withDrawerGravity(Gravity.LEFT)
                 .withHeader(R.layout.nav_header_main)
+                .withDisplayBelowStatusBar(true)
+                .withDrawerWidthDp(240)
                 .addDrawerItems(
-                        new PrimaryDrawerItem().withName("Home").withSelectable(false),
-                        new PrimaryDrawerItem().withName("Files").withSelectable(false),
-                        new PrimaryDrawerItem().withName("Clear Data").withSelectable(false)
-
+                        new PrimaryDrawerItem().withName("Home").withSelectable(false).withTextColor(getResources().getColor(R.color.primary)).withIcon(R.drawable.ic_home_black_24dp).withTypeface(Utils.getNormal(getActivity())),
+                        new PrimaryDrawerItem().withName("All Files").withSelectable(false).withTextColor(getResources().getColor(R.color.primary)).withIcon(R.drawable.ic_folder_black_24dp).withTypeface(Utils.getNormal(getActivity())),
+                        new PrimaryDrawerItem().withName("All Data").withSelectable(false).withTextColor(getResources().getColor(R.color.primary)).withIcon(R.drawable.ic_insert_drive_file_black_24dp).withTypeface(Utils.getNormal(getActivity()))
                 )
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
@@ -108,11 +111,11 @@ public class BaseActivity extends AppCompatActivity {
                                 finishActivity();
                             }
                         } else if (position == 3) {
-                            if (getActivity() instanceof ClearDataActivity) {
+                            if (getActivity() instanceof AllDataActivity) {
                                 hideMenu(true);
                             } else {
                                 Intent intent = new Intent(getActivity(),
-                                        ClearDataActivity.class);
+                                        AllDataActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                                         | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                                 startActivity(intent);

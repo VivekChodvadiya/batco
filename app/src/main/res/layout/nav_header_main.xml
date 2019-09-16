@@ -27,23 +27,23 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="15dp"
             android:layout_marginTop="10dp"
-            android:orientation="vertical"
-            android:visibility="invisible">
+            android:orientation="vertical">
+
+            <com.common.view.CTextView
+                android:id="@+id/tvMenuCompany"
+                style="@style/txt_fff_20"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name" />
 
             <com.common.view.CTextView
                 android:id="@+id/tvMenuFullName"
                 style="@style/txt_fff_16"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="John Cena" />
-
-            <com.common.view.CTextView
-                android:id="@+id/tvMenuCompany"
-                style="@style/txt_fff_14"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
-                android:text="@string/app_name" />
+                android:text="John Cena"
+                android:visibility="invisible" />
 
             <com.common.view.CTextView
                 android:id="@+id/tvMenuLocation"
@@ -53,7 +53,8 @@
                 android:layout_marginTop="5dp"
                 android:drawablePadding="5dp"
                 android:gravity="center"
-                android:text="Argentine, USA" />
+                android:text="Argentine, USA"
+                android:visibility="invisible" />
         </LinearLayout>
 
 

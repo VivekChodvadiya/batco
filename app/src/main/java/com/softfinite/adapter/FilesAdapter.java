@@ -41,6 +41,11 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.MyViewHolder
         notifyDataSetChanged();
     }
 
+    public void remove(int position) {
+        files.remove(position);
+        notifyDataSetChanged();
+    }
+
     public File getItem(int position) {
         return files.get(position);
     }

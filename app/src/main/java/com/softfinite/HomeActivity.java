@@ -3,6 +3,7 @@ package com.softfinite;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -18,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -34,12 +36,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.common.view.SimpleListDividerDecorator;
+import com.google.gson.Gson;
 import com.softfinite.RoomDb.TruckDao;
 import com.softfinite.RoomDb.TruckRoomDatabase;
 import com.softfinite.RoomDb.TruckViewModel;
 import com.softfinite.adapter.TruckListAdapter;
 import com.softfinite.RoomDb.Truck;
 import com.softfinite.utils.CameraSelectorDialogFragment;
+import com.softfinite.utils.Constant;
+import com.softfinite.utils.Debug;
 import com.softfinite.utils.ExitStrategy;
 import com.softfinite.utils.FormatSelectorDialogFragment;
 import com.softfinite.utils.MessageDialogFragment;
@@ -311,9 +316,14 @@ public class HomeActivity extends BaseActivity implements
     @Override
     public void handleResult(Result rawResult) {
         try {
-            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-            r.play();
+//            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+//            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+//            r.play();
+//            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+//            MediaPlayer mp = MediaPlayer.create(getApplicationContext(), notification);
+//            mp.start();
+            MediaPlayer song = MediaPlayer.create(getActivity(), R.raw.beep);
+            song.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -324,9 +334,15 @@ public class HomeActivity extends BaseActivity implements
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (validate()) {
-                    Truck truck = new Truck(editTruckNumber.getText().toString().trim(), todayDate.toString(), rawResult.getContents());
-                    truckViewModel.insert(truck);
-                    dialog.dismiss();
+                    try {
+                        Truck truck = new Truck(editTruckNumber.getText().toString().trim(), todayDate.toString(), rawResult.getContents());
+                        truckViewModel.insert(truck);
+                        dialog.dismiss();
+                        Debug.e("truck :", new Gson().toJson(truck));
+                    } catch (Exception e) {
+                        showToast("Something went wrong.. Data Not Inserted", Toast.LENGTH_LONG);
+                        e.printStackTrace();
+                    }
                 }
             }
         }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -400,7 +416,7 @@ public class HomeActivity extends BaseActivity implements
 
     public void generateNoteOnSD(Context context, String sFileName, String sBody) {
         try {
-            File root = new File(Environment.getExternalStorageDirectory(), "batco");
+            File root = new File(Constant.FOLDER_RIDEINN_PATH);
             if (!root.exists()) {
                 root.mkdirs();
             } else {
@@ -411,7 +427,7 @@ public class HomeActivity extends BaseActivity implements
             writer.append(sBody);
             writer.flush();
             writer.close();
-            Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "File Saved Successfully : " + sFileName, Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -438,7 +454,20 @@ public class HomeActivity extends BaseActivity implements
 
     private boolean validate() {
         if (editTruckNumber.getText().toString().trim().length() <= 0) {
-            showToast("Enter Truck Number", Toast.LENGTH_SHORT);
+            mScannerView.stopCamera();
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+            builder.setMessage("Enter Truck Number First, Without truck number data will not save.").setTitle("Alert").setCancelable(false).setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    editTruckNumber.requestFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(editTruckNumber, InputMethodManager.SHOW_IMPLICIT);
+                    mScannerView.startCamera();
+                    dialog.dismiss();
+                }
+            }).show();
+//            showToast("Enter Truck Number", Toast.LENGTH_SHORT);
             return false;
         }
         return true;

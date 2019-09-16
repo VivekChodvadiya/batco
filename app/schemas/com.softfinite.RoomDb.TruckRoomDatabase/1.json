@@ -1,0 +1,47 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "5728cbc6ef295d9fa35915a8f1ff52ba",
+    "entities": [
+      {
+        "tableName": "truck_table",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`barcodenumber` TEXT NOT NULL, `trucknumber` TEXT NOT NULL, `date` TEXT NOT NULL, PRIMARY KEY(`trucknumber`, `barcodenumber`))",
+        "fields": [
+          {
+            "fieldPath": "mBarcodenumber",
+            "columnName": "barcodenumber",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mTrucknumber",
+            "columnName": "trucknumber",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mDate",
+            "columnName": "date",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "trucknumber",
+            "barcodenumber"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5728cbc6ef295d9fa35915a8f1ff52ba')"
+    ]
+  }
+}

@@ -81,10 +81,11 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="@color/white"
                     android:orientation="horizontal">
 
                     <com.common.view.CBTextView
-                        style="@style/txt_theme_12"
+                        style="@style/txt_theme_14"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
@@ -98,7 +99,7 @@
                         android:text="Date" />
 
                     <com.common.view.CBTextView
-                        style="@style/txt_theme_12"
+                        style="@style/txt_theme_14"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
@@ -112,7 +113,7 @@
                         android:text="Truck Number" />
 
                     <com.common.view.CBTextView
-                        style="@style/txt_theme_12"
+                        style="@style/txt_theme_14"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
@@ -125,16 +126,21 @@
                         android:paddingBottom="8dp"
                         android:text="Barcode Number" />
 
-                    <!--<ImageView-->
-                        <!--android:id="@+id/imgDeleteRecord"-->
-                        <!--android:layout_width="wrap_content"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--android:layout_gravity="center"-->
-                        <!--android:padding="5dp"-->
-                        <!--android:src="@drawable/ic_delete_24dp"-->
-                        <!--android:tint="@color/primary" />-->
+                    <ImageView
+                        android:id="@+id/imgDeleteRecord"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:padding="5dp"
+                        android:src="@drawable/ic_delete_24dp"
+                        android:tint="@color/primary" />
+
                 </LinearLayout>
 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0.8dp"
+                    android:background="@color/primary" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -159,7 +165,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:gravity="center"
-                            android:text="No Records Found!" />
+                            android:text="No Data Found!" />
 
                     </LinearLayout>
                 </LinearLayout>

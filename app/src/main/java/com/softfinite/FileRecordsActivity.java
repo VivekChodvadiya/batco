@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -15,8 +14,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.common.view.SimpleListDividerDecorator;
-import com.softfinite.RoomDb.Truck;
 import com.softfinite.adapter.FilesAdapter;
+import com.softfinite.utils.Constant;
 import com.softfinite.utils.Utils;
 
 import java.io.File;
@@ -26,7 +25,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class FileRecordsActivity extends BaseActivity {
-
 
     @BindView(R.id.recyclerViewFiles)
     RecyclerView recyclerViewFiles;
@@ -73,7 +71,7 @@ public class FileRecordsActivity extends BaseActivity {
             public void onItemDeleteClick(int position) {
                 File file = filesAdapter.getItem(position);
                 try {
-                    deleteFile(file);
+                    deleteFile(file, position);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -84,18 +82,21 @@ public class FileRecordsActivity extends BaseActivity {
     }
 
     private void getListFiles() {
-        String path = Environment.getExternalStorageDirectory().toString() + "/batco";
+//        String path = Environment.getExternalStorageDirectory().toString() + "/batco";
+        String path = Constant.FOLDER_RIDEINN_PATH;
         Log.d("Files", "Path: " + path);
         File directory = new File(path);
-        File[] files = directory.listFiles();
+        if (directory.exists()) {
+            File[] files = directory.listFiles();
 
-        ArrayList<File> fileArrayList = new ArrayList<>();
-        Log.d("Files", "Size: " + files.length);
-        for (int i = 0; i < files.length; i++) {
-            fileArrayList.add(files[i]);
-            Log.e("Files", "FileName:" + files[i].getName());
+            ArrayList<File> fileArrayList = new ArrayList<>();
+            Log.d("Files", "Size: " + files.length);
+            for (int i = 0; i < files.length; i++) {
+                fileArrayList.add(files[i]);
+                Log.e("Files", "FileName:" + files[i].getName());
+            }
+            filesAdapter.addAll(fileArrayList);
         }
-        filesAdapter.addAll(fileArrayList);
         refreshPlaceholder();
     }
 
@@ -107,7 +108,7 @@ public class FileRecordsActivity extends BaseActivity {
         try {
             startActivity(pdfOpenintent);
         } catch (ActivityNotFoundException e) {
-
+            e.printStackTrace();
         }
     }
 
@@ -121,14 +122,14 @@ public class FileRecordsActivity extends BaseActivity {
         }
     }
 
-    private void deleteFile(File file) {
+    private void deleteFile(File file, int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
         builder.setMessage("Are you sure you want to delete this file?").setTitle("Are you sure?").setCancelable(false).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 try {
                     file.delete();
+                    filesAdapter.remove(position);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

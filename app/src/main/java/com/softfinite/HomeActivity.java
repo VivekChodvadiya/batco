@@ -316,14 +316,17 @@ public class HomeActivity extends BaseActivity implements
     @Override
     public void handleResult(Result rawResult) {
         try {
-//            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-//            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-//            r.play();
-//            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-//            MediaPlayer mp = MediaPlayer.create(getApplicationContext(), notification);
-//            mp.start();
-            MediaPlayer song = MediaPlayer.create(getActivity(), R.raw.beep);
-            song.start();
+            MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.beep);
+            mediaPlayer.start();
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (mediaPlayer != null) {
+                        mediaPlayer.release();
+                    }
+                }
+            }, 3000);
         } catch (Exception e) {
             e.printStackTrace();
         }

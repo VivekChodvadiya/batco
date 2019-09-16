@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -101,9 +102,14 @@ public class FileRecordsActivity extends BaseActivity {
     }
 
     private void openFile(File f) {
-        Uri pathfile = Uri.fromFile(f);
+//        Uri pathfile = FileProvider.getUriForFile(
+//                getActivity(),
+//                getActivity().getApplicationContext()
+//                        .getPackageName() + ".provider", f);
+        Uri pathfile = FileProvider.getUriForFile(getActivity(), BuildConfig.APPLICATION_ID + ".provider", f);
+//        Uri pathfile = Uri.fromFile(f);
         Intent pdfOpenintent = new Intent(Intent.ACTION_VIEW);
-        pdfOpenintent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        pdfOpenintent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         pdfOpenintent.setDataAndType(pathfile, "text/plain");
         try {
             startActivity(pdfOpenintent);

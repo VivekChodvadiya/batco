@@ -12,12 +12,14 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.softfinite.utils.Debug;
+import com.softfinite.utils.Utils;
+
+import butterknife.ButterKnife;
+
 //import com.afollestad.materialdialogs.DialogAction;
 //import com.afollestad.materialdialogs.MaterialDialog;
 //import com.kartum.utils.Constant;
-import com.softfinite.utils.Debug;
-
-import butterknife.ButterKnife;
 
 public class SplashActivity extends BaseActivity {
     String TAG = "SplashActivity";
@@ -313,10 +315,17 @@ public class SplashActivity extends BaseActivity {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, ZBAR_CAMERA_PERMISSION);
         } else {
-            Intent i = new Intent(getActivity(),
-                    HomeActivity.class);
-            startActivity(i);
-            finish();
+            if (Utils.isUserLoggedIn(getActivity())) {
+                Intent i = new Intent(getActivity(),
+                        HomeActivity.class);
+                startActivity(i);
+                finish();
+            } else {
+                Intent i = new Intent(getActivity(),
+                        PasswordActivity.class);
+                startActivity(i);
+                finish();
+            }
         }
     }
 

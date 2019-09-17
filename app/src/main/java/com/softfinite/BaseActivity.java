@@ -2,9 +2,9 @@ package com.softfinite;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -14,19 +14,21 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-//import com.afollestad.materialdialogs.DialogAction;
-//import com.afollestad.materialdialogs.MaterialDialog;
-import com.softfinite.utils.AsyncProgressDialog;
-import com.softfinite.utils.Constant;
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.softfinite.utils.AsyncProgressDialog;
+import com.softfinite.utils.Constant;
 import com.softfinite.utils.Utils;
+
+//import com.afollestad.materialdialogs.DialogAction;
+//import com.afollestad.materialdialogs.MaterialDialog;
 //import com.nostra13.universalimageloader.core.ImageLoader;
 
 
@@ -81,7 +83,8 @@ public class BaseActivity extends AppCompatActivity {
                 .addDrawerItems(
                         new PrimaryDrawerItem().withName("Home").withSelectable(false).withTextColor(getResources().getColor(R.color.primary)).withIcon(R.drawable.ic_home_black_24dp).withTypeface(Utils.getNormal(getActivity())),
                         new PrimaryDrawerItem().withName("All Files").withSelectable(false).withTextColor(getResources().getColor(R.color.primary)).withIcon(R.drawable.ic_folder_black_24dp).withTypeface(Utils.getNormal(getActivity())),
-                        new PrimaryDrawerItem().withName("All Data").withSelectable(false).withTextColor(getResources().getColor(R.color.primary)).withIcon(R.drawable.ic_insert_drive_file_black_24dp).withTypeface(Utils.getNormal(getActivity()))
+                        new PrimaryDrawerItem().withName("All Data").withSelectable(false).withTextColor(getResources().getColor(R.color.primary)).withIcon(R.drawable.ic_insert_drive_file_black_24dp).withTypeface(Utils.getNormal(getActivity())),
+                        new PrimaryDrawerItem().withName("Logout").withSelectable(false).withTextColor(getResources().getColor(R.color.primary)).withIcon(R.drawable.ic_insert_drive_file_black_24dp).withTypeface(Utils.getNormal(getActivity()))
                 )
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
@@ -122,6 +125,8 @@ public class BaseActivity extends AppCompatActivity {
                                 hideMenu(false);
                                 finishActivity();
                             }
+                        } else if (position == 4) {
+                            confirmLogout();
                         }
 //                        } else if (position == 3) {
 //                            if (getActivity() instanceof YourWalletActivity) {
@@ -210,8 +215,35 @@ public class BaseActivity extends AppCompatActivity {
 //        fillProfileData();
     }
 
-//    private void confirmLogout() {
+    private void confirmLogout() {
 //
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+        builder.setMessage(R.string.logout_msg).setTitle(R.string.logout_title);
+
+        //Setting message manually and performing action on button click
+        builder.setMessage("Do you want to close this application ?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Utils.clearLoginCredetials(getActivity());
+                        Intent i = new Intent(getActivity(), PasswordActivity.class);
+                        startActivity(i);
+                        finishActivity();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //  Action for 'NO' Button
+                        dialog.cancel();
+                    }
+                });
+        //Creating dialog box
+        AlertDialog alert = builder.create();
+        //Setting the title manually
+        alert.setTitle("AlertDialogExample");
+        alert.show();
+
 //        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())
 //                .title(R.string.logout_title)
 //                .content(R.string.logout_msg)
@@ -234,7 +266,7 @@ public class BaseActivity extends AppCompatActivity {
 //
 //        MaterialDialog dialog = builder.build();
 //        dialog.show();
-//    }
+    }
 
     private void hideMenu(boolean b) {
         try {

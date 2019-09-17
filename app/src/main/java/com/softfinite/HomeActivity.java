@@ -2,19 +2,13 @@ package com.softfinite;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.media.MediaPlayer;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +17,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -37,28 +32,21 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.common.view.SimpleListDividerDecorator;
 import com.google.gson.Gson;
+import com.softfinite.RoomDb.Truck;
 import com.softfinite.RoomDb.TruckDao;
 import com.softfinite.RoomDb.TruckRoomDatabase;
 import com.softfinite.RoomDb.TruckViewModel;
 import com.softfinite.adapter.TruckListAdapter;
-import com.softfinite.RoomDb.Truck;
 import com.softfinite.utils.CameraSelectorDialogFragment;
 import com.softfinite.utils.Constant;
 import com.softfinite.utils.Debug;
 import com.softfinite.utils.ExitStrategy;
 import com.softfinite.utils.FormatSelectorDialogFragment;
-import com.softfinite.utils.MessageDialogFragment;
 import com.softfinite.utils.Utils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -79,8 +67,8 @@ public class HomeActivity extends BaseActivity implements
     RecyclerView rvTruckData;
     @BindView(R.id.btnSave)
     Button btnSave;
-    @BindView(R.id.btnApply)
-    Button btnApply;
+    @BindView(R.id.tvCount)
+    TextView tvCount;
     @BindView(R.id.llPlaceHolder)
     LinearLayout llPlaceHolder;
 
@@ -95,7 +83,6 @@ public class HomeActivity extends BaseActivity implements
     private int mCameraId = -1;
 
     private TruckViewModel truckViewModel;
-
     TruckListAdapter truckListAdapter;
     CharSequence todayDate;
 
@@ -150,19 +137,21 @@ public class HomeActivity extends BaseActivity implements
             }
         });
 
-        btnApply.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                truckViewModel.getFromTruckAndDate(editTruckNumber.getText().toString().trim(), todayDate.toString()).observe(getActivity(), new Observer<List<Truck>>() {
-                    @Override
-                    public void onChanged(@Nullable final List<Truck> words) {
-                        // Update the cached copy of the words in the adapter.
-                        truckListAdapter.addAll(words);
-                        refreshPlaceHolder();
-                    }
-                });
-            }
-        });
+//        btnApply.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                truckViewModel.getFromTruckAndDate(editTruckNumber.getText().toString().trim(), todayDate.toString()).observe(getActivity(), new Observer<List<Truck>>() {
+//                    @Override
+//                    public void onChanged(@Nullable final List<Truck> words) {
+//                        // Update the cached copy of the words in the adapter.
+//                        truckListAdapter.addAll(words);
+//                        refreshPlaceHolder();
+//                    }
+//                });
+//            }
+//        });
+
+        tvCount.setText("0");
 
         editTruckNumber.addTextChangedListener(new TextWatcher() {
             @Override
@@ -182,6 +171,11 @@ public class HomeActivity extends BaseActivity implements
                     public void onChanged(@Nullable final List<Truck> words) {
                         // Update the cached copy of the words in the adapter.
                         truckListAdapter.addAll(words);
+                        if (truckListAdapter != null) {
+                            if (truckListAdapter.getAllDAta() != null) {
+                                tvCount.setText("" + truckListAdapter.getAllDAta().size());
+                            }
+                        }
                         refreshPlaceHolder();
                     }
                 });

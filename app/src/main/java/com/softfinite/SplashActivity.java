@@ -334,10 +334,17 @@ public class SplashActivity extends BaseActivity {
         switch (requestCode) {
             case ZBAR_CAMERA_PERMISSION:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Intent i = new Intent(getActivity(),
-                            HomeActivity.class);
-                    startActivity(i);
-                    finish();
+                    if (Utils.isUserLoggedIn(getActivity())) {
+                        Intent i = new Intent(getActivity(),
+                                HomeActivity.class);
+                        startActivity(i);
+                        finish();
+                    } else {
+                        Intent i = new Intent(getActivity(),
+                                PasswordActivity.class);
+                        startActivity(i);
+                        finish();
+                    }
                 } else {
                     Toast.makeText(this, "Please grant camera permission to use the QR Scanner", Toast.LENGTH_SHORT).show();
                 }

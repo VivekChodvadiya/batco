@@ -84,7 +84,7 @@ public class BaseActivity extends AppCompatActivity {
                         new PrimaryDrawerItem().withName("Home").withSelectable(false).withTextColor(getResources().getColor(R.color.primary)).withIcon(R.drawable.ic_home_black_24dp).withTypeface(Utils.getNormal(getActivity())),
                         new PrimaryDrawerItem().withName("All Files").withSelectable(false).withTextColor(getResources().getColor(R.color.primary)).withIcon(R.drawable.ic_folder_black_24dp).withTypeface(Utils.getNormal(getActivity())),
                         new PrimaryDrawerItem().withName("All Data").withSelectable(false).withTextColor(getResources().getColor(R.color.primary)).withIcon(R.drawable.ic_insert_drive_file_black_24dp).withTypeface(Utils.getNormal(getActivity())),
-                        new PrimaryDrawerItem().withName("Logout").withSelectable(false).withTextColor(getResources().getColor(R.color.primary)).withIcon(R.drawable.ic_insert_drive_file_black_24dp).withTypeface(Utils.getNormal(getActivity()))
+                        new PrimaryDrawerItem().withName("Logout").withSelectable(false).withTextColor(getResources().getColor(R.color.primary)).withIcon(R.drawable.ic_iconfinder_exit_2676937).withTypeface(Utils.getNormal(getActivity()))
                 )
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
@@ -219,15 +219,13 @@ public class BaseActivity extends AppCompatActivity {
 //
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        builder.setMessage(R.string.logout_msg).setTitle(R.string.logout_title);
-
-        //Setting message manually and performing action on button click
-        builder.setMessage("Do you want to close this application ?")
-                .setCancelable(false)
+        builder.setMessage(R.string.logout_msg)
+                .setCancelable(true)
+                .setTitle(R.string.logout_title)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         Utils.clearLoginCredetials(getActivity());
-                        Intent i = new Intent(getActivity(), PasswordActivity.class);
+                        Intent i = new Intent(getActivity(), SplashActivity.class);
                         startActivity(i);
                         finishActivity();
                     }
@@ -238,10 +236,7 @@ public class BaseActivity extends AppCompatActivity {
                         dialog.cancel();
                     }
                 });
-        //Creating dialog box
         AlertDialog alert = builder.create();
-        //Setting the title manually
-        alert.setTitle("AlertDialogExample");
         alert.show();
 
 //        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity())

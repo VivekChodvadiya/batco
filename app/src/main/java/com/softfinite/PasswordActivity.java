@@ -43,7 +43,7 @@ public class PasswordActivity extends BaseActivity {
                     startActivity(i);
                     finishAffinity();
                     Utils.setPref(getActivity(), RequestParamsUtils.USER_ID, "true");
-
+                    showToast("Login Success", Toast.LENGTH_SHORT);
                 } else {
                     showToast("You have entered an invalid password", Toast.LENGTH_SHORT);
                 }

@@ -2,7 +2,9 @@ package com.softfinite;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -44,6 +46,8 @@ import com.softfinite.utils.ExitStrategy;
 import com.softfinite.utils.FormatSelectorDialogFragment;
 import com.softfinite.utils.Utils;
 
+import net.sourceforge.zbar.Symbol;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -74,7 +78,7 @@ public class HomeActivity extends BaseActivity implements
 
     private static final String FLASH_STATE = "FLASH_STATE";
     private static final String AUTO_FOCUS_STATE = "AUTO_FOCUS_STATE";
-    private static final String SELECTED_FORMATS = "SELECTED_FORMATS";
+    //    private static final String SELECTED_FORMATS = "SELECTED_FORMATS";
     private static final String CAMERA_ID = "CAMERA_ID";
     private ZBarScannerView mScannerView;
     private boolean mFlash;
@@ -92,7 +96,7 @@ public class HomeActivity extends BaseActivity implements
         if (state != null) {
             mFlash = state.getBoolean(FLASH_STATE, false);
             mAutoFocus = state.getBoolean(AUTO_FOCUS_STATE, true);
-            mSelectedIndices = state.getIntegerArrayList(SELECTED_FORMATS);
+//            mSelectedIndices = state.getIntegerArrayList(SELECTED_FORMATS);
             mCameraId = state.getInt(CAMERA_ID, -1);
         } else {
             mFlash = false;
@@ -127,6 +131,12 @@ public class HomeActivity extends BaseActivity implements
 
         truckListAdapter = new TruckListAdapter(getActivity());
         rvTruckData.setAdapter(truckListAdapter);
+
+        mScannerView.setAutoFocus(true);
+        List<BarcodeFormat> selectedformat = new ArrayList<BarcodeFormat>();
+        final BarcodeFormat CODE128 = new BarcodeFormat(Symbol.CODE128, "CODE128");
+        selectedformat.add(CODE128);
+        mScannerView.setFormats(selectedformat);
 
         truckViewModel.getFromTruckAndDate(editTruckNumber.getText().toString().trim(), todayDate.toString()).observe(getActivity(), new Observer<List<Truck>>() {
             @Override
@@ -171,11 +181,12 @@ public class HomeActivity extends BaseActivity implements
                     public void onChanged(@Nullable final List<Truck> words) {
                         // Update the cached copy of the words in the adapter.
                         truckListAdapter.addAll(words);
-                        if (truckListAdapter != null) {
-                            if (truckListAdapter.getAllDAta() != null) {
-                                tvCount.setText("" + truckListAdapter.getAllDAta().size());
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                tvCount.setText("" + truckListAdapter.getItemCount());
                             }
-                        }
+                        },500);
                         refreshPlaceHolder();
                     }
                 });
@@ -236,7 +247,7 @@ public class HomeActivity extends BaseActivity implements
         }
         MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_NEVER);
 
-        menuItem = menu.add(Menu.NONE, R.id.menu_formats, 0, R.string.formats);
+//        menuItem = menu.add(Menu.NONE, R.id.menu_formats, 0, R.string.formats);
         MenuItemCompat.setShowAsAction(menuItem, MenuItem.SHOW_AS_ACTION_NEVER);
 
         menuItem = menu.add(Menu.NONE, R.id.menu_camera_selector, 0, R.string.select_camera);
@@ -250,7 +261,7 @@ public class HomeActivity extends BaseActivity implements
         super.onSaveInstanceState(outState);
         outState.putBoolean(FLASH_STATE, mFlash);
         outState.putBoolean(AUTO_FOCUS_STATE, mAutoFocus);
-        outState.putIntegerArrayList(SELECTED_FORMATS, mSelectedIndices);
+//        outState.putIntegerArrayList(SELECTED_FORMATS, mSelectedIndices);
         outState.putInt(CAMERA_ID, mCameraId);
     }
 
@@ -267,7 +278,7 @@ public class HomeActivity extends BaseActivity implements
             formats.add(BarcodeFormat.ALL_FORMATS.get(index));
         }
         if (mScannerView != null) {
-            mScannerView.setFormats(formats);
+//            mScannerView.setFormats(formats);
         }
     }
 
@@ -425,9 +436,17 @@ public class HomeActivity extends BaseActivity implements
             writer.flush();
             writer.close();
             Toast.makeText(context, "File Saved Successfully : " + sFileName, Toast.LENGTH_SHORT).show();
+            shareFile(gpxfile);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void shareFile(File file) {
+        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+        sharingIntent.setType("text/plain");
+        sharingIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+        startActivity(Intent.createChooser(sharingIntent, "Share file using"));
     }
 
     @Override

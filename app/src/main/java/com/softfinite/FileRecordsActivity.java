@@ -65,7 +65,7 @@ public class FileRecordsActivity extends BaseActivity {
 
                 sharingIntent.setType("text/plain");
                 sharingIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
-                startActivity(Intent.createChooser(sharingIntent, "Share image using"));
+                startActivity(Intent.createChooser(sharingIntent, "Share file using"));
             }
 
             @Override

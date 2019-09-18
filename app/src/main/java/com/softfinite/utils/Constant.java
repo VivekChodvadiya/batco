@@ -28,6 +28,7 @@ public class Constant {
     public static final String USER_LONGITUDE = "longi";
 
     public static final String LOGIN_INFO = "login_info";
+    public static final String BARCODE_FORMATE = "barcode_formate";
     public static final String MASTER_DATA = "master_data";
     public static final String COUNTRY = "country";
 

@@ -24,7 +24,7 @@ public class PasswordActivity extends BaseActivity {
     @BindView(R.id.btnSubmit)
     Button btnSubmit;
 
-    String password = "batcoroadlines";
+    String password = "Secure@Brc";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -38,7 +38,7 @@ public class PasswordActivity extends BaseActivity {
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (editPassword.getText().toString().trim().equalsIgnoreCase(password)) {
+                if (editPassword.getText().toString().trim().equals(password)) {
                     Intent i = new Intent(getActivity(), HomeActivity.class);
                     startActivity(i);
                     finishAffinity();

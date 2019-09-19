@@ -137,6 +137,7 @@ public class HomeActivity extends BaseActivity implements
         final BarcodeFormat CODE128 = new BarcodeFormat(Symbol.CODE128, "CODE128");
         selectedformat.add(CODE128);
         mScannerView.setFormats(selectedformat);
+        mScannerView.setupScanner();
 
         truckViewModel.getFromTruckAndDate(editTruckNumber.getText().toString().trim(), todayDate.toString()).observe(getActivity(), new Observer<List<Truck>>() {
             @Override
@@ -186,7 +187,7 @@ public class HomeActivity extends BaseActivity implements
                             public void run() {
                                 tvCount.setText("" + truckListAdapter.getItemCount());
                             }
-                        },500);
+                        }, 500);
                         refreshPlaceHolder();
                     }
                 });
@@ -200,6 +201,7 @@ public class HomeActivity extends BaseActivity implements
                 for (int i = 0; i < truckListAdapter.getAllDAta().size(); i++) {
                     data.append(truckListAdapter.getAllDAta().get(i).getBarcodenumber());
                     data.append("\n");
+                    Debug.e("truckList ", truckListAdapter.getAllDAta().get(i).getBarcodenumber());
                 }
                 generateNoteOnSD(getActivity(), todayDate + editTruckNumber.getText().toString().trim(), data.toString());
             }
